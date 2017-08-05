@@ -99,6 +99,7 @@ class SearchPage extends Component {
 			searchString: 'london',
 			//isLoading keeps track of whether a query is in progress
 			isLoading: false,
+			message: '',
 		};
 	}
   onSearchTextChanged(event) {
@@ -112,6 +113,28 @@ class SearchPage extends Component {
 	_executeQuery = (query) => {
 		console.log(query);
 		this.setState({ isLoading: true });
+		//makes use of fetch function that's part of Fetch API
+		fetch(query)
+			//asynchornous response is returned as a Promise
+			.then(response => response.json())
+			//the success path calls _handleResponse to parse the JSON response
+			.then(json => this._handleResponse(json.response))
+			.catch(error =>
+				this.setState({
+					isLoading: false,
+					message: 'Something bad happened ' + error
+			}));
+	};
+
+	
+	_handleResponse = (response) => {
+		// this clears isLoading and logs the # of properties found if query was successful
+		this.setState({ isLoading: false , message: '' });
+		if(response.application_response_code.substr(0, 1) === '1') {
+			console.log('Properties found: ' + response.listings.length);
+		} else {
+			this.setState({ message: 'Location not recognized; please try again.'});
+		}
 	};
 
 	// configures and initiates the search query 
@@ -148,6 +171,7 @@ class SearchPage extends Component {
 				
 					<Image source={require('./Resources/house.png')} style={styles.image}/>
 					{spinner}
+					<Text style={styles.description}>{this.state.message}</Text>
 
 
 			</View>
