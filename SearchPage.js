@@ -1,7 +1,7 @@
 'use strict';
 
 // called a "destructuring assignment" -- this allows you to extract multiple object properties and assign them to variables using a single statement
-// thus as a result, the rest of your code can drop the Reac prefix
+// thus as a result, the rest of your code can drop the React prefix
 // i.e. instead of ReactNative.StyleSheet, can just refer directly to
 // it using StyleSheet
 import React, { Component } from 'react'
@@ -14,6 +14,8 @@ import {
 	ActivityIndicator,
 	Image
 } from 'react-native';
+//This brings in SearchResults class
+import SearchResults from './SearchResults';
 
 var styles = StyleSheet.create({
   description: {
@@ -86,7 +88,7 @@ function urlForQueryAndPage(key, value, pageNumber) {
 		.map(key => key + '=' + encodeURIComponent(data[key]))
 		.join('&');
 
-	return 'https://api.nestoria.co.uk/api>' + querystring;
+	return 'https://api.nestoria.co.uk/api?' + querystring;
 }
 
 
@@ -114,16 +116,16 @@ class SearchPage extends Component {
 		console.log(query);
 		this.setState({ isLoading: true });
 		//makes use of fetch function that's part of Fetch API
-		fetch(query)
-			//asynchornous response is returned as a Promise
-			.then(response => response.json())
-			//the success path calls _handleResponse to parse the JSON response
-			.then(json => this._handleResponse(json.response))
-			.catch(error =>
-				this.setState({
-					isLoading: false,
-					message: 'Something bad happened ' + error
-			}));
+    //asynchornous response is returned as a Promise
+  	//the success path calls _handleResponse to parse the JSON response
+				fetch(query)
+					.then(response => response.json())
+					.then(json => this._handleResponse(json.response))
+					.catch(error =>
+						 this.setState({
+							isLoading: false,
+							message: 'Something bad happened ' + error
+					 }));
 	};
 
 	
@@ -131,7 +133,12 @@ class SearchPage extends Component {
 		// this clears isLoading and logs the # of properties found if query was successful
 		this.setState({ isLoading: false , message: '' });
 		if(response.application_response_code.substr(0, 1) === '1') {
-			console.log('Properties found: ' + response.listings.length);
+			//console.log('Properties found: ' + response.listings.length);
+			this.props.navigator.push({
+				title: 'Results',
+				component: SearchResults,
+				passProps: {listings: response.listings}
+			});
 		} else {
 			this.setState({ message: 'Location not recognized; please try again.'});
 		}
@@ -171,7 +178,7 @@ class SearchPage extends Component {
 				
 					<Image source={require('./Resources/house.png')} style={styles.image}/>
 					{spinner}
-					<Text style={styles.description}>{this.state.message}</Text>
+				  <Text style={styles.description}>{this.state.message}</Text>
 
 
 			</View>
